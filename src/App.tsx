@@ -6,9 +6,9 @@ let didInit = false;
 class App extends React.Component{
 
   public state={
-    gainNode: undefined,
-    distortNode: undefined,
-    convolverNode: undefined,
+    gainNode: undefined as unknown as GainNode,
+    distortNode: undefined as unknown as WaveShaperNode,
+    reverbNode: undefined as unknown as ConvolverNode,
     audioCtx: new AudioContext(),
     playing: true
   }
@@ -26,6 +26,7 @@ class App extends React.Component{
       //And some other fun options
       const distortNode = this.state.audioCtx.createWaveShaper();
       const reverbNode = this.state.audioCtx.createConvolver();
+      this.setState({gainNode, distortNode, reverbNode});
       //Connect all the nodes together
       track.connect(gainNode).connect(distortNode).connect(reverbNode).connect(this.state.audioCtx.destination);
     }
@@ -37,7 +38,7 @@ class App extends React.Component{
       <h1>Audio Mixer 5000</h1>
       <h2 id="trackName"></h2>
       <div>
-        <input type="range" id="volume" name="volume" min="0" max="11" list="values" />
+        <input type="range" id="volume" name="volume" min="0" max="11" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode})}}/>
         <label htmlFor="volume">Volume</label>
         <datalist id="values">
             <option value="0" label="0"></option>
@@ -47,11 +48,12 @@ class App extends React.Component{
         </datalist>
       </div>
       <div>
-        <input type="range" id="distortion" name="distortion" min="0" max="100" />
+        {/*Need function to create curve*/}
+        <input type="range" id="distortion" name="distortion" min="0" max="100" onChange={(e)=> { this.setState({distort: +e.currentTarget.value})}}/>
         <label htmlFor="distortion">Distortion</label>
       </div>
       <div>
-        <input type="range" id="reverb" name="reverb" min="0" max="100" />
+        <input type="range" id="reverb" name="reverb" min="0" max="100" onChange={()=> { alert("Distort!")}}/>
         <label htmlFor="reverb">Reverb</label>
       </div>
       <audio>
