@@ -9,8 +9,10 @@ function App() {
     // Your code here
     const audioElement = document.querySelector("audio");
     var audioCtx = new AudioContext();
-    if(audioElement){
-      var track = new MediaElementAudioSourceNode(audioCtx, {
+    let track;
+
+    if(audioElement && track === undefined){
+      track = new MediaElementAudioSourceNode(audioCtx, {
         mediaElement: audioElement,
       });
   
