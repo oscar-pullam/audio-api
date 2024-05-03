@@ -8,25 +8,26 @@ class App extends React.Component{
   public state={
     gainNode: undefined,
     distortNode: undefined,
-    convolverNode: undefined
+    convolverNode: undefined,
+    audioCtx: new AudioContext(),
+    playing: true
   }
 
   //On mount, load once
   public componentDidMount(): void {
     const audioElement = document.querySelector("audio");
-    var audioCtx = new AudioContext();
 
     if(audioElement && !didInit){
-      var track = audioCtx.createMediaElementSource(audioElement);
+      var track = this.state.audioCtx.createMediaElementSource(audioElement);
       didInit = true;
   
       // Create the node that controls the volume.
-      const gainNode = new GainNode(audioCtx);
+      const gainNode = new GainNode(this.state.audioCtx);
       //And some other fun options
-      const distortNode = audioCtx.createWaveShaper();
-      const reverbNode = audioCtx.createConvolver();
+      const distortNode = this.state.audioCtx.createWaveShaper();
+      const reverbNode = this.state.audioCtx.createConvolver();
       //Connect all the nodes together
-      track.connect(gainNode).connect(distortNode).connect(reverbNode).connect(audioCtx.destination);
+      track.connect(gainNode).connect(distortNode).connect(reverbNode).connect(this.state.audioCtx.destination);
     }
   }
 
@@ -53,13 +54,27 @@ class App extends React.Component{
         <input type="range" id="reverb" name="reverb" min="0" max="100" />
         <label htmlFor="reverb">Reverb</label>
       </div>
-      <audio src="outfoxing.mp3" crossOrigin="anonymous"></audio>
+      <audio>
+        <source src="nutcracker.mp3" type="audio/mpeg"/>
+      </audio>
       <button
-        data-playing="false"
         role="switch"
-        aria-checked="false"
+        aria-checked={this.state.playing}
+        onClick={async ()=>{
+          if (this.state.audioCtx.state === "suspended") {
+            this.state.audioCtx.resume();
+          }
+
+          const audioElement = document.querySelector("audio");
+          if (!this.state.playing) {
+            await audioElement?.play();
+          } else{
+            audioElement?.pause();
+          }
+          this.setState({playing: !this.state.playing});
+        }}
       >
-        <span>Play/Pause</span>
+        Play/Pause
       </button>
       </div>
     );
