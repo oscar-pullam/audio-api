@@ -116,7 +116,7 @@ class App extends React.Component{
 
         }}
       >
-        Play/Pause
+        {this.state.playing ? "Pause" : "Play"}
       </button>
       <div>{this.state.playing && "Now Playing Nutcracker March"}</div>
       </div>
