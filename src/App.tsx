@@ -45,6 +45,19 @@ class App extends React.Component{
     this.setState({reverbNode: this.state.reverbNode});
   }
 
+  public setDistortion(magnitude: number){
+    const curve = new Float32Array(44100);
+    const deg = Math.PI / 180;
+
+    for (let i = 0; i < 44100; i++) {
+      const x = (i * 2) / 44100 - 1;
+      curve[i] = ((3 + magnitude) * x * 20 * deg) / (Math.PI + magnitude * Math.abs(x));
+    }
+    
+    this.state.distortNode.curve = curve;
+    this.setState({distortNode: this.state.distortNode});
+  }
+
   public render(){
     return (
       <div>
@@ -61,8 +74,7 @@ class App extends React.Component{
         </datalist>
       </div>
       <div>
-        {/*Need function to create curve*/}
-        <input type="range" id="distortion" name="distortion" min="0" max="100" onChange={(e)=> { this.setState({distort: +e.currentTarget.value})}}/>
+        <input type="range" id="distortion" name="distortion" min="0" max="100" onChange={(e)=> { this.setDistortion(+e.currentTarget.value)}}/>
         <label htmlFor="distortion">Distortion</label>
       </div>
       <div>
