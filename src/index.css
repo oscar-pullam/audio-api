@@ -18,6 +18,8 @@ datalist {
   justify-content: space-between;
   writing-mode: vertical-lr;
   width: 200px;
+  position: relative;
+  left: 55px;
 }
 
 option {
@@ -31,4 +33,16 @@ input[type="range"] {
 
 #eleven{
   color: red;
+}
+
+label{
+  padding-right: 8px;
+}
+
+.input-container{
+  padding: 4px;
+}
+
+.container{
+  padding: 8px;
 }

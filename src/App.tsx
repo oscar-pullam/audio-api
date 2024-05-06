@@ -10,7 +10,7 @@ class App extends React.Component{
     distortNode: undefined as unknown as WaveShaperNode,
     reverbNode: undefined as unknown as ConvolverNode,
     audioCtx: new AudioContext(),
-    playing: true
+    playing: false
   }
 
   //On mount, load once
@@ -60,12 +60,12 @@ class App extends React.Component{
 
   public render(){
     return (
-      <div>
+      <div className='container'>
       <h1>Audio Mixer 5000</h1>
       <h2 id="trackName"></h2>
-      <div>
-        <input type="range" id="volume" name="volume" min="0" max="11" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode})}}/>
+      <div className='input-container'>
         <label htmlFor="volume">Volume</label>
+        <input type="range" id="volume" name="volume" min="0" max="11" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode})}}/>
         <datalist id="values">
             <option value="0" label="0"></option>
             <option value="5" label="5"></option>
@@ -73,17 +73,17 @@ class App extends React.Component{
             <option value="11" label="11" id="eleven"></option>
         </datalist>
       </div>
-      <div>
-        <input type="range" id="distortion" name="distortion" min="0" max="100" onChange={(e)=> { this.setDistortion(+e.currentTarget.value)}}/>
+      <div className='input-container'>
         <label htmlFor="distortion">Distortion</label>
+        <input type="range" id="distortion" name="distortion" min="0" max="100" onChange={(e)=> { this.setDistortion(+e.currentTarget.value)}}/>
       </div>
-      <div>
+      <div className='input-container'>
+        <label htmlFor="reverb">Reverb</label>
         <select id="reverb" name="reverb" onChange={(e)=> { this.setReverb(e.target.value)}}>
           <option value="">None</option>
           <option value="park.mp3">Park</option>
           <option value="bus.mp3">Bus</option>
         </select>
-        <label htmlFor="reverb">Reverb</label>
       </div>
       <audio>
         <source src="nutcracker.mp3" type="audio/mpeg"/>
@@ -96,17 +96,29 @@ class App extends React.Component{
             this.state.audioCtx.resume();
           }
 
-          const audioElement = document.querySelector("audio");
-          if (!this.state.playing) {
-            await audioElement?.play();
-          } else{
-            audioElement?.pause();
+          alert(this.state.playing);
+
+          try{
+            const audioElement = document.querySelector("audio");
+            if (!this.state.playing) {
+              console.log("In here", audioElement);
+              await audioElement?.play();
+              console.log("Finished");
+            } else{
+              audioElement?.pause();
+            }
+            console.log("Set", !this.state.playing);
+            this.setState({playing: !this.state.playing});
+          } catch(err){
+            console.log(err);
           }
-          this.setState({playing: !this.state.playing});
+
+
         }}
       >
         Play/Pause
       </button>
+      <div>{this.state.playing && "Now Playing Nutcracker March"}</div>
       </div>
     );
   }
