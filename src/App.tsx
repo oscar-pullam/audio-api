@@ -32,6 +32,19 @@ class App extends React.Component{
     }
   }
 
+  public async setReverb(fileName: string){
+    if(fileName == ""){
+      this.state.reverbNode.buffer = null;
+    }else{
+      await fetch(fileName)
+        .then(async (response)=> {var file = await response.arrayBuffer();
+          this.state.reverbNode.buffer = await this.state.audioCtx.decodeAudioData(file);
+        }
+      ).catch(()=> alert("File Not Found"));
+    }
+    this.setState({reverbNode: this.state.reverbNode});
+  }
+
   public render(){
     return (
       <div>
@@ -53,7 +66,11 @@ class App extends React.Component{
         <label htmlFor="distortion">Distortion</label>
       </div>
       <div>
-        <input type="range" id="reverb" name="reverb" min="0" max="100" onChange={()=> { alert("Distort!")}}/>
+        <select id="reverb" name="reverb" onChange={(e)=> { this.setReverb(e.target.value)}}>
+          <option value="">None</option>
+          <option value="park.mp3">Park</option>
+          <option value="bus.mp3">Bus</option>
+        </select>
         <label htmlFor="reverb">Reverb</label>
       </div>
       <audio>
