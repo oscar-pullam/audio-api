@@ -28,17 +28,20 @@ class App extends React.Component{
       const reverbNode = this.state.audioCtx.createConvolver();
       this.setState({gainNode, distortNode, reverbNode});
       //Connect all the nodes together
-      track.connect(gainNode).connect(distortNode).connect(reverbNode).connect(this.state.audioCtx.destination);
+      track.connect(gainNode).connect(distortNode).connect(this.state.audioCtx.destination);
     }
   }
 
   public async setReverb(fileName: string){
     if(fileName == ""){
-      this.state.reverbNode.buffer = null;
+      //Remove from node chain
+      this.state.reverbNode.disconnect();
     }else{
+      //Add to node chain
       await fetch(fileName)
         .then(async (response)=> {var file = await response.arrayBuffer();
           this.state.reverbNode.buffer = await this.state.audioCtx.decodeAudioData(file);
+          this.state.distortNode.connect(this.state.reverbNode).connect(this.state.audioCtx.destination);
         }
       ).catch(()=> alert("File Not Found"));
     }
