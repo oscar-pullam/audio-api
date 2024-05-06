@@ -85,8 +85,8 @@ class App extends React.Component{
           <option value="bus.mp3">Bus</option>
         </select>
       </div>
-      <audio>
-        <source src="nutcracker.mp3" type="audio/mpeg"/>
+      <audio controls loop>
+        <source src="nutcracker.mp3" type="audio/mp3"></source>
       </audio>
       <button
         role="switch"
@@ -95,8 +95,6 @@ class App extends React.Component{
           if (this.state.audioCtx.state === "suspended") {
             this.state.audioCtx.resume();
           }
-
-          alert(this.state.playing);
 
           try{
             const audioElement = document.querySelector("audio");
