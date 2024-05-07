@@ -7,7 +7,7 @@ class App extends React.Component{
 
   public state={
     gainNode: undefined as unknown as GainNode,
-    distortNode: undefined as unknown as WaveShaperNode,
+    distortNode: undefined as unknown as OscillatorNode,
     reverbNode: undefined as unknown as ConvolverNode,
     audioCtx: new AudioContext(),
     playing: false
@@ -24,7 +24,7 @@ class App extends React.Component{
       // Create the node that controls the volume.
       const gainNode = new GainNode(this.state.audioCtx);
       //And some other fun options
-      const distortNode = this.state.audioCtx.createWaveShaper();
+      const distortNode = this.state.audioCtx.createOscillator();
       const reverbNode = this.state.audioCtx.createConvolver();
       this.setState({gainNode, distortNode, reverbNode});
       //Connect all the nodes together
@@ -48,19 +48,6 @@ class App extends React.Component{
     this.setState({reverbNode: this.state.reverbNode});
   }
 
-  public setDistortion(magnitude: number){
-    const curve = new Float32Array(44100);
-    const deg = Math.PI / 180;
-
-    for (let i = 0; i < 44100; i++) {
-      const x = (i * 2) / 44100 - 1;
-      curve[i] = ((3 + magnitude) * x * 20 * deg) / (Math.PI + magnitude * Math.abs(x));
-    }
-    
-    this.state.distortNode.curve = curve;
-    this.setState({distortNode: this.state.distortNode});
-  }
-
   public render(){
     return (
       <div className='container'>
@@ -68,7 +55,7 @@ class App extends React.Component{
       <h2 id="trackName"></h2>
       <div className='input-container'>
         <label htmlFor="volume">Volume</label>
-        <input type="range" id="volume" name="volume" min="0" max="11" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode})}}/>
+        <input type="range" id="volume" name="volume" min="0" max="11" step="0.1" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode})}}/>
         <datalist id="values">
             <option value="0" label="0"></option>
             <option value="5" label="5"></option>
@@ -78,7 +65,7 @@ class App extends React.Component{
       </div>
       <div className='input-container'>
         <label htmlFor="distortion">Distortion</label>
-        <input type="range" id="distortion" name="distortion" min="0" max="100" onChange={(e)=> { this.setDistortion(+e.currentTarget.value)}}/>
+        <input type="range" id="distortion" name="distortion" min="0" max="100" onChange={(e)=> { this.state.distortNode.frequency.value = +e.currentTarget.value; this.setState({distortNode: this.state.distortNode})}}/>
       </div>
       <div className='input-container'>
         <label htmlFor="reverb">Reverb</label>
@@ -88,7 +75,7 @@ class App extends React.Component{
           <option value="bus.mp3">Bus</option>
         </select>
       </div>
-      <audio controls loop>
+      <audio loop>
         <source src="nutcracker.mp3" type="audio/mp3"></source>
       </audio>
       <button
@@ -99,21 +86,13 @@ class App extends React.Component{
             this.state.audioCtx.resume();
           }
 
-          try{
-            const audioElement = document.querySelector("audio");
-            if (!this.state.playing) {
-              console.log("In here", audioElement);
-              await audioElement?.play();
-              console.log("Finished");
-            } else{
-              audioElement?.pause();
-            }
-            console.log("Set", !this.state.playing);
-            this.setState({playing: !this.state.playing});
-          } catch(err){
-            console.log(err);
+          const audioElement = document.querySelector("audio");
+          if (!this.state.playing) {
+            await audioElement?.play();
+          } else{
+            audioElement?.pause();
           }
-
+          this.setState({playing: !this.state.playing});
 
         }}
       >
