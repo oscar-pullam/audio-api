@@ -7,7 +7,7 @@ class App extends React.Component{
 
   public state={
     gainNode: undefined as unknown as GainNode,
-    distortNode: undefined as unknown as OscillatorNode,
+    distortNode: undefined as unknown as WaveShaperNode,
     reverbNode: undefined as unknown as ConvolverNode,
     audioCtx: new AudioContext(),
     playing: false
@@ -23,17 +23,19 @@ class App extends React.Component{
   
       // Create the node that controls the volume.
       const gainNode = new GainNode(this.state.audioCtx);
+      const distortGainNode = new GainNode(this.state.audioCtx, {gain: 1})
       //And some other fun options
-      const distortNode = this.state.audioCtx.createOscillator();
+      const distortNode = this.state.audioCtx.createWaveShaper();
+      distortNode.oversample = "4x";
       const reverbNode = this.state.audioCtx.createConvolver();
       this.setState({gainNode, distortNode, reverbNode});
       //Connect all the nodes together
-      track.connect(gainNode).connect(distortNode).connect(this.state.audioCtx.destination);
+      track.connect(distortNode).connect(distortGainNode).connect(gainNode).connect(this.state.audioCtx.destination);
     }
   }
 
   public async setReverb(fileName: string){
-    if(fileName == ""){
+    if(fileName === ""){
       //Remove from node chain
       this.state.reverbNode.disconnect();
     }else{
@@ -46,6 +48,19 @@ class App extends React.Component{
       ).catch(()=> alert("File Not Found"));
     }
     this.setState({reverbNode: this.state.reverbNode});
+  }
+
+  public setDistortion(k: number){
+    var n_samples = 44100;
+    var curve = new Float32Array(n_samples);
+
+    for ( var i = 0; i < n_samples; ++i ) {
+        var x = i * 2 / n_samples - 1;
+        curve[i] = (3 + k)*Math.atan(Math.sinh(x*0.25)*5) / (Math.PI + k * Math.abs(x));
+    }
+
+    this.state.distortNode.curve = curve;
+    this.setState({distortNode: this.state.distortNode})
   }
 
   public render(){
@@ -65,7 +80,7 @@ class App extends React.Component{
       </div>
       <div className='input-container'>
         <label htmlFor="distortion">Distortion</label>
-        <input type="range" id="distortion" name="distortion" min="0" max="100" onChange={(e)=> { this.state.distortNode.frequency.value = +e.currentTarget.value; this.setState({distortNode: this.state.distortNode})}}/>
+        <input type="range" id="distortion" name="distortion" min="0" max="200" onChange={(e)=> { this.setDistortion(+e.currentTarget.value)}}/>
       </div>
       <div className='input-container'>
         <label htmlFor="reverb">Reverb</label>
