@@ -46,6 +46,15 @@ label{
   width: 340px;
 }
 
+.mixer{
+  width: 300px;
+}
+
 .wrapper{
   display: flex;
+}
+
+figure{
+  margin-left: auto;
+  margin-right: auto;
 }

@@ -2,8 +2,8 @@ import './App.css';
 import React from 'react';
 
 let didInit = false;
-const WIDTH = 600;
-const HEIGHT = 900;
+const WIDTH = 300;
+const HEIGHT = 300;
 
 class App extends React.Component{
 
@@ -93,7 +93,7 @@ class App extends React.Component{
 
     //Line settings
     canvasCtx.lineWidth = 2;
-    canvasCtx.strokeStyle = "rgb(255, 255, 255)";
+    canvasCtx.strokeStyle = "rgb(0, 0, 255)";
 
     canvasCtx.beginPath();
 
@@ -126,72 +126,73 @@ class App extends React.Component{
     if(canvasCtx && this.state.visualNode){
       this.draw(dataArray, canvasCtx);
     }
-
   }
 
   public render(){
     return (
       <>
       <div className="wrapper">
-      <div className='container'>
-      <h1>Audio Mixer 5000</h1>
-      <div className='input-container'>
-        <label htmlFor="volume">Volume</label>
-        <input type="range" id="volume" name="volume" min="0" max="11" step="0.1" defaultValue="1" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode}); this.visualize();}}/>
-        <datalist id="values">
-            <option value="0" label="0" style={{paddingRight: "68px"}}></option>
-            <option value="5" label="5" style={{paddingRight: "60px"}}></option>
-            <option value="10" label="10"></option>
-            <option value="11" label="11" id="eleven"></option>
-        </datalist>
-      </div>
-      <div className='input-container'>
-        <label htmlFor="distortion">Distortion</label>
-        <input type="range" id="distortion" defaultValue="0" name="distortion" min="0" max="200" onChange={(e)=> { this.setDistortion(+e.currentTarget.value)}}/>
-      </div>
-      <div className='input-container'>
-        <label htmlFor="reverb">Reverb</label>
-        <select id="reverb" name="reverb" onChange={(e)=> { this.setReverb(e.target.value)}}>
-          <option value="">None</option>
-          <option value="park.mp3">Park</option>
-          <option value="bus.mp3">Bus</option>
-        </select>
-      </div>
-      <audio loop>
-        <source src="nutcracker.mp3" type="audio/mp3"></source>
-      </audio>
-      <button
-        role="switch"
-        aria-checked={this.state.playing}
-        onClick={async ()=>{
-          if (this.state.audioCtx.state === "suspended") {
-            this.state.audioCtx.resume();
-          }
+        <div className='container mixer'>
+          <h1>Audio Mixer 5000</h1>
+          <div className='input-container'>
+            <label htmlFor="volume">Volume</label>
+            <input type="range" id="volume" name="volume" min="0" max="11" step="0.1" defaultValue="1" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode}); this.visualize();}}/>
+            <datalist id="values">
+                <option value="0" label="0" style={{paddingRight: "68px"}}></option>
+                <option value="5" label="5" style={{paddingRight: "60px"}}></option>
+                <option value="10" label="10"></option>
+                <option value="11" label="11" id="eleven"></option>
+            </datalist>
+          </div>
+          <div className='input-container'>
+            <label htmlFor="distortion">Distortion</label>
+            <input type="range" id="distortion" defaultValue="0" name="distortion" min="0" max="200" onChange={(e)=> { this.setDistortion(+e.currentTarget.value)}}/>
+          </div>
+          <div className='input-container'>
+            <label htmlFor="reverb">Reverb</label>
+            <select id="reverb" name="reverb" onChange={(e)=> { this.setReverb(e.target.value)}}>
+              <option value="">None</option>
+              <option value="park.mp3">Park</option>
+              <option value="bus.mp3">Bus</option>
+            </select>
+          </div>
+          <audio loop>
+            <source src="nutcracker.mp3" type="audio/mp3"></source>
+          </audio>
+          <button
+            role="switch"
+            aria-checked={this.state.playing}
+            onClick={async ()=>{
+              if (this.state.audioCtx.state === "suspended") {
+                this.state.audioCtx.resume();
+              }
 
-          const audioElement = document.querySelector("audio");
-          if (!this.state.playing) {
-            await audioElement?.play();
-            var e = document.getElementById("reverb") as HTMLSelectElement;
-            this.setReverb(e.selectedOptions[0].value);
-          } else{
-            audioElement?.pause();
-            this.setReverb("");
-          }
-          this.setState({playing: !this.state.playing});
+              const audioElement = document.querySelector("audio");
+              if (!this.state.playing) {
+                await audioElement?.play();
+                var e = document.getElementById("reverb") as HTMLSelectElement;
+                this.setReverb(e.selectedOptions[0].value);
+              } else{
+                audioElement?.pause();
+                this.setReverb("");
+              }
+              this.setState({playing: !this.state.playing});
 
-        }}
-      >
-        {this.state.playing ? "Pause" : "Play"}
-      </button>
-      <div>{this.state.playing && "Now Playing Nutcracker March"}</div>
-      <canvas id="canvas" width={WIDTH} height={HEIGHT}></canvas>
-      </div>
-      <div className='container'>
-        <figure>
-        <img src="sigmoid.png" alt="Sigmoid curve" width="320px"/>
-        <figcaption>Sigmoid curve used to generate distortion</figcaption>
-        </figure>
-      </div>
+            }}
+          >
+            {this.state.playing ? "Pause" : "Play"}
+          </button>
+          <div>{this.state.playing && "Now Playing Nutcracker March"}</div>
+        </div>
+        <div className='container'>
+          <figure>
+          <img src="sigmoid.png" alt="Sigmoid curve" width="320px"/>
+          <figcaption>Sigmoid curve used to generate distortion</figcaption>
+          </figure>
+        </div>
+        <div className='container'>
+          <canvas id="canvas" width={WIDTH} height={HEIGHT}></canvas>
+        </div>
       </div>
       </>
     );
