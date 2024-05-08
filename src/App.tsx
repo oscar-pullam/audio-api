@@ -24,10 +24,11 @@ class App extends React.Component{
   
       // Create the node that controls the volume.
       const gainNode = new GainNode(this.state.audioCtx);
-      const distortGainNode = new GainNode(this.state.audioCtx, {gain: 1})
       //And some other fun options
       const distortNode = this.state.audioCtx.createWaveShaper();
       distortNode.oversample = "4x";
+      //Make sure the distortion doesn't get too loud
+      const distortGainNode = new GainNode(this.state.audioCtx, {gain: 0.5})
       const reverbNode = this.state.audioCtx.createConvolver();
       this.setState({gainNode, distortNode, reverbNode, originNode: track});
       //Connect all the nodes together
@@ -68,10 +69,9 @@ class App extends React.Component{
     return (
       <div className='container'>
       <h1>Audio Mixer 5000</h1>
-      <h2 id="trackName"></h2>
       <div className='input-container'>
         <label htmlFor="volume">Volume</label>
-        <input type="range" id="volume" name="volume" min="0" max="11" step="0.1" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode})}}/>
+        <input type="range" id="volume" name="volume" min="0" max="11" step="0.1" defaultValue="1" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode})}}/>
         <datalist id="values">
             <option value="0" label="0"></option>
             <option value="5" label="5"></option>
@@ -81,7 +81,7 @@ class App extends React.Component{
       </div>
       <div className='input-container'>
         <label htmlFor="distortion">Distortion</label>
-        <input type="range" id="distortion" name="distortion" min="0" max="200" onChange={(e)=> { this.setDistortion(+e.currentTarget.value)}}/>
+        <input type="range" id="distortion" defaultValue="0" name="distortion" min="0" max="200" onChange={(e)=> { this.setDistortion(+e.currentTarget.value)}}/>
       </div>
       <div className='input-container'>
         <label htmlFor="reverb">Reverb</label>
