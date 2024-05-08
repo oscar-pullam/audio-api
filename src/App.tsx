@@ -9,6 +9,7 @@ class App extends React.Component{
     gainNode: undefined as unknown as GainNode,
     distortNode: undefined as unknown as WaveShaperNode,
     reverbNode: undefined as unknown as ConvolverNode,
+    originNode: undefined as unknown as MediaElementAudioSourceNode,
     audioCtx: new AudioContext(),
     playing: false
   }
@@ -28,7 +29,7 @@ class App extends React.Component{
       const distortNode = this.state.audioCtx.createWaveShaper();
       distortNode.oversample = "4x";
       const reverbNode = this.state.audioCtx.createConvolver();
-      this.setState({gainNode, distortNode, reverbNode});
+      this.setState({gainNode, distortNode, reverbNode, originNode: track});
       //Connect all the nodes together
       track.connect(distortNode).connect(distortGainNode).connect(gainNode).connect(this.state.audioCtx.destination);
     }
@@ -104,8 +105,11 @@ class App extends React.Component{
           const audioElement = document.querySelector("audio");
           if (!this.state.playing) {
             await audioElement?.play();
+            var e = document.getElementById("reverb") as HTMLSelectElement;
+            this.setReverb(e.selectedOptions[0].value);
           } else{
             audioElement?.pause();
+            this.setReverb("");
           }
           this.setState({playing: !this.state.playing});
 
