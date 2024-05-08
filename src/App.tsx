@@ -41,10 +41,12 @@ class App extends React.Component{
       //Remove from node chain
       this.state.reverbNode.disconnect();
     }else{
-      //Add to node chain
+      //Get the audio file
       await fetch(fileName)
-        .then(async (response)=> {var file = await response.arrayBuffer();
+        .then(async (response)=> {
+          var file = await response.arrayBuffer();
           this.state.reverbNode.buffer = await this.state.audioCtx.decodeAudioData(file);
+          //Add to node chain
           this.state.distortNode.connect(this.state.reverbNode).connect(this.state.audioCtx.destination);
         }
       ).catch(()=> alert("File Not Found"));
@@ -58,6 +60,7 @@ class App extends React.Component{
 
     for ( var i = 0; i < n_samples; ++i ) {
         var x = i * 2 / n_samples - 1;
+        //Do some math to get the sigmoid curve
         curve[i] = (3 + k)*Math.atan(Math.sinh(x*0.25)*5) / (Math.PI + k * Math.abs(x));
     }
 
@@ -67,14 +70,16 @@ class App extends React.Component{
 
   public render(){
     return (
+      <>
+      <div className="wrapper">
       <div className='container'>
       <h1>Audio Mixer 5000</h1>
       <div className='input-container'>
         <label htmlFor="volume">Volume</label>
         <input type="range" id="volume" name="volume" min="0" max="11" step="0.1" defaultValue="1" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode})}}/>
         <datalist id="values">
-            <option value="0" label="0"></option>
-            <option value="5" label="5"></option>
+            <option value="0" label="0" style={{paddingRight: "68px"}}></option>
+            <option value="5" label="5" style={{paddingRight: "60px"}}></option>
             <option value="10" label="10"></option>
             <option value="11" label="11" id="eleven"></option>
         </datalist>
@@ -119,6 +124,14 @@ class App extends React.Component{
       </button>
       <div>{this.state.playing && "Now Playing Nutcracker March"}</div>
       </div>
+      <div className='container'>
+        <figure>
+        <img src="sigmoid.png" alt="Sigmoid curve" width="320px"/>
+        <figcaption>Sigmoid curve used to generate distortion</figcaption>
+        </figure>
+      </div>
+      </div>
+      </>
     );
   }
 }

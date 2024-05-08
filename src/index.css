@@ -13,9 +13,7 @@ code {
 }
 
 datalist {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  display: block;
   writing-mode: vertical-lr;
   width: 200px;
   position: relative;
@@ -45,4 +43,8 @@ label{
 
 .container{
   padding: 8px;
+}
+
+.wrapper{
+  display: flex;
 }
