@@ -2,6 +2,8 @@ import './App.css';
 import React from 'react';
 
 let didInit = false;
+const WIDTH = 600;
+const HEIGHT = 200;
 
 class App extends React.Component{
 
@@ -10,6 +12,7 @@ class App extends React.Component{
     distortNode: undefined as unknown as WaveShaperNode,
     reverbNode: undefined as unknown as ConvolverNode,
     originNode: undefined as unknown as MediaElementAudioSourceNode,
+    visualNode: undefined as unknown as AnalyserNode,
     audioCtx: new AudioContext(),
     playing: false
   }
@@ -30,9 +33,16 @@ class App extends React.Component{
       //Make sure the distortion doesn't get too loud
       const distortGainNode = new GainNode(this.state.audioCtx, {gain: 0.5})
       const reverbNode = this.state.audioCtx.createConvolver();
-      this.setState({gainNode, distortNode, reverbNode, originNode: track});
+      //Node for retreiving visualization data
+      const visualNode = this.state.audioCtx.createAnalyser();
+      visualNode.minDecibels = -90;
+      visualNode.maxDecibels = -10;
+      visualNode.smoothingTimeConstant = 0.85;
+      visualNode.fftSize = 2048;
+      this.setState({gainNode, distortNode, reverbNode, visualNode, originNode: track});
       //Connect all the nodes together
-      track.connect(distortNode).connect(distortGainNode).connect(gainNode).connect(this.state.audioCtx.destination);
+      track.connect(distortNode).connect(distortGainNode).connect(gainNode).connect(visualNode).connect(this.state.audioCtx.destination);
+      this.visualize();
     }
   }
 
@@ -52,6 +62,7 @@ class App extends React.Component{
       ).catch(()=> alert("File Not Found"));
     }
     this.setState({reverbNode: this.state.reverbNode});
+    this.visualize();
   }
 
   public setDistortion(k: number){
@@ -59,13 +70,57 @@ class App extends React.Component{
     var curve = new Float32Array(n_samples);
 
     for ( var i = 0; i < n_samples; ++i ) {
-        var x = i * 2 / n_samples - 1;
-        //Do some math to get the sigmoid curve
-        curve[i] = (3 + k)*Math.atan(Math.sinh(x*0.25)*5) / (Math.PI + k * Math.abs(x));
+      var x = i * 2 / n_samples - 1;
+      //Do some math to get the sigmoid curve
+      curve[i] = (3 + k)*Math.atan(Math.sinh(x*0.25)*5) / (Math.PI + k * Math.abs(x));
     }
 
     this.state.distortNode.curve = curve;
-    this.setState({distortNode: this.state.distortNode})
+    this.setState({distortNode: this.state.distortNode});
+    this.visualize();
+  }
+
+  public visualize() {
+
+    const bufferLength = 2048;
+    const dataArray = new Uint8Array(bufferLength);
+    var canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    const canvasCtx = canvas?.getContext("2d");
+
+    if(canvasCtx && this?.state?.visualNode){
+
+      canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+  
+      this.state.visualNode.getByteTimeDomainData(dataArray);
+  
+      canvasCtx.fillStyle = "rgb(200, 200, 200)";
+      canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+  
+      canvasCtx.lineWidth = 2;
+      canvasCtx.strokeStyle = "rgb(0, 0, 0)";
+  
+      canvasCtx.beginPath();
+  
+      const sliceWidth = (WIDTH * 1.0) / bufferLength;
+      let x = 0;
+  
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = (v * HEIGHT) / 2;
+  
+        if (i === 0) {
+          canvasCtx.moveTo(x, y);
+        } else {
+          canvasCtx.lineTo(x, y);
+        }
+  
+        x += sliceWidth;
+      }
+  
+      canvasCtx.lineTo(WIDTH, HEIGHT / 2);
+      canvasCtx.stroke();
+    }
+
   }
 
   public render(){
@@ -76,7 +131,7 @@ class App extends React.Component{
       <h1>Audio Mixer 5000</h1>
       <div className='input-container'>
         <label htmlFor="volume">Volume</label>
-        <input type="range" id="volume" name="volume" min="0" max="11" step="0.1" defaultValue="1" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode})}}/>
+        <input type="range" id="volume" name="volume" min="0" max="11" step="0.1" defaultValue="1" list="values" onChange={(e)=> { this.state.gainNode.gain.value = +e.currentTarget.value; this.setState({gainNode: this.state.gainNode}); this.visualize()}}/>
         <datalist id="values">
             <option value="0" label="0" style={{paddingRight: "68px"}}></option>
             <option value="5" label="5" style={{paddingRight: "60px"}}></option>
@@ -123,6 +178,7 @@ class App extends React.Component{
         {this.state.playing ? "Pause" : "Play"}
       </button>
       <div>{this.state.playing && "Now Playing Nutcracker March"}</div>
+      <canvas id="canvas" width={WIDTH} height={HEIGHT}></canvas>
       </div>
       <div className='container'>
         <figure>
