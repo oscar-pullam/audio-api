@@ -1,3 +1,11 @@
+# Audio API
+
+This project demonstrates the use of the [Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
+
+[Additive Nodes](https://teropa.info/blog/2016/09/20/additive-synthesis)
+
+[Distortion](https://alexanderleon.medium.com/web-audio-series-part-2-designing-distortion-using-javascript-and-the-web-audio-api-446301565541)
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
